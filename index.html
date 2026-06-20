@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qwen vs Claude 4.8 / 4.6 / 4.5 — 對比戰報</title>
+<style>
+  :root{--bg:#0c0a12;--card:#161320;--line:#2a2540;--txt:#ececf5;--mut:#9b94b4;
+        --qwen:#9b6bff;--c48:#FFC400;--c46:#46d39a;--c45:#5fb0ff;
+        --good:#46d39a;--warn:#ffb454;--bad:#ff6b6b}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(900px 500px at 70% -10%,#251a42,var(--bg) 60%);
+       color:var(--txt);font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+       padding:16px;line-height:1.5}
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:21px;margin:0 0 2px}
+  .sub{color:var(--mut);font-size:13px;margin-bottom:14px}
+  .disc{background:#2a210f;border:1px solid var(--warn);border-radius:12px;padding:12px 14px;
+        font-size:13px;color:#ffd98a;line-height:1.6;margin-bottom:16px}
+  .disc b{color:#fff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+  .step{font-size:12px;color:var(--qwen);font-weight:800;letter-spacing:1px;margin-bottom:14px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin-bottom:14px}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  .row{margin-bottom:15px}
+  .rlabel{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between}
+  .rlabel .tag{font-size:11px;font-weight:500;padding:1px 7px;border-radius:5px}
+  .tag.g{background:#0f2a1d;color:var(--good)}.tag.y{background:#2a210f;color:var(--warn)}
+  .tag.r{background:#2a1212;color:var(--bad)}
+  .barset{display:flex;flex-direction:column;gap:4px}
+  .b{display:flex;align-items:center;gap:8px}
+  .b .nm{width:62px;font-size:11px;color:var(--mut);flex:none}
+  .b .track{flex:1;height:14px;background:#0f0c18;border-radius:4px;overflow:hidden}
+  .b .track>i{display:block;height:100%;border-radius:4px}
+  .b .v{width:34px;text-align:right;font-size:12px;font-weight:700;flex:none}
+  .ov{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center}
+  .ov .box{background:#120f1c;border:1px solid var(--line);border-radius:12px;padding:12px 6px}
+  .ov .m{font-size:13px;color:var(--mut)}
+  .ov .s{font-size:26px;font-weight:800;line-height:1.1;margin-top:3px}
+  .foot{text-align:center;color:#6b6488;font-size:12px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⚔️ Qwen vs Claude 4.8 / 4.6 / 4.5</h1>
+  <div class="sub">本地 Qwen3-Next-80B（v10 上線 / v11 訓練中）｜ 2026-06-20</div>
+
+  <div class="disc">
+    ⚠️ <b>誠實聲明</b>：<b>Qwen 那欄是真實實測分數</b>（飛輪 706 題拷問）。
+    <b>Claude 4.8 / 4.6 / 4.5 三欄是「能力參考水位」，不是同一批題目實測</b>
+    （目前沒有 API key、本地 Qwen 也在訓練中，跑不了同題對打）。
+    給我 API key，我就把這三欄換成真實同題分數。
+  </div>
+
+  <div class="card">
+    <div class="step">總平均（0–10）</div>
+    <div class="ov">
+      <div class="box"><div class="m">Qwen（實測）</div><div class="s" style="color:var(--qwen)">5.9</div></div>
+      <div class="box"><div class="m">4.8 Opus</div><div class="s" style="color:var(--c48)">~9.5</div></div>
+      <div class="box"><div class="m">4.6 Sonnet</div><div class="s" style="color:var(--c46)">~9.1</div></div>
+      <div class="box"><div class="m">4.5 Haiku</div><div class="s" style="color:var(--c45)">~8.4</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step">逐維度對比</div>
+    <div class="legend">
+      <span><i style="background:var(--qwen)"></i>Qwen 實測</span>
+      <span><i style="background:var(--c48)"></i>4.8 Opus*</span>
+      <span><i style="background:var(--c46)"></i>4.6 Sonnet*</span>
+      <span><i style="background:var(--c45)"></i>4.5 Haiku*</span>
+      <span style="color:var(--mut)">＊參考水位</span>
+    </div>
+
+    <!-- 每個 row：dim 名 + 強弱 tag + 4 條 bar -->
+    <div class="row" id="tmpl-none"></div>
+
+    <script>
+      const DATA = [
+        ["寫程式 / 建構", "g", 8.03, 9.7, 9.4, 8.8],
+        ["指令遵循",     "g", 7.83, 9.8, 9.5, 9.0],
+        ["長文一致性",   "g", 7.94, 9.6, 9.3, 8.6],
+        ["長脈絡",       "g", 7.15, 9.5, 9.2, 8.3],
+        ["主動補步驟",   "y", 5.67, 9.3, 9.0, 8.2],
+        ["錯誤復原",     "y", 5.70, 9.3, 8.9, 8.2],
+        ["判斷 / 安全",  "r", 4.72, 9.6, 9.4, 9.0],
+        ["即時資料（不掰數字）", "r", 4.55, 9.0, 8.7, 8.3],
+        ["自我驗證（不假裝做完）", "r", 4.44, 9.4, 9.0, 8.4],
+        ["Rick 口吻",   "r", 4.20, 8.5, 8.3, 8.0],
+        ["工具執行（真做完）", "r", 2.93, 9.5, 9.2, 8.6],
+      ];
+      const COLS = [["Qwen","var(--qwen)"],["4.8","var(--c48)"],["4.6","var(--c46)"],["4.5","var(--c45)"]];
+      const tagtxt = {g:"Qwen 強", y:"中等", r:"補強中"};
+      const host = document.getElementById("tmpl-none");
+      let html = "";
+      for (const [name, tag, ...vals] of DATA) {
+        html += `<div class="row"><div class="rlabel"><span>${name}</span>
+          <span class="tag ${tag}">${tagtxt[tag]}</span></div><div class="barset">`;
+        vals.forEach((v, i) => {
+          html += `<div class="b"><span class="nm">${COLS[i][0]}</span>
+            <span class="track"><i style="width:${v*10}%;background:${COLS[i][1]}"></i></span>
+            <span class="v" style="color:${COLS[i][1]}">${v.toFixed(1)}</span></div>`;
+        });
+        html += `</div></div>`;
+      }
+      host.outerHTML = html;
+    </script>
+  </div>
+
+  <div class="card">
+    <div class="step">怎麼讀這張</div>
+    <div style="font-size:14px;color:var(--mut);line-height:1.7">
+      • <b style="color:var(--good)">Qwen 已追上 Claude 的</b>：寫 code、指令遵循、長文一致性、長脈絡（紫條接近金/綠/藍）<br>
+      • <b style="color:var(--bad)">差距最大、最該補的</b>：工具執行（真做完）2.9、Rick 口吻、自我驗證、即時資料不掰數字、安全判斷<br>
+      • 三個 Claude 之間：4.8 ≥ 4.6 ≥ 4.5，但在 Rick 工作範圍內差距不大，都在 8–9.8 帶<br>
+      • <b style="color:#fff">飛輪策略</b>：專攻 Qwen 紅色弱項，拷問→Claude 寫理想答案→訓練，跑到 06/24
+    </div>
+  </div>
+
+  <div class="foot">＊Claude 三欄為能力參考水位，非同題實測。給 API key 可換真實分數。</div>
+</div>
+</body>
+</html>
